@@ -1,4 +1,4 @@
-package com.amir35.spring_ai;
+package com.amir35.spring_ai.service;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.stereotype.Service;
@@ -15,6 +15,15 @@ public class ChatService {
     public String ask(String message) {
         return chatClient
                 .prompt()
+                .system("""
+                    You are an expert Java and Spring Boot assistant.
+
+                    Answer questions clearly and accurately.
+
+                    Explain technical concepts in simple terms.
+
+                    Do not make up information.
+                    """)
                 .user(message)
                 .call()
                 .content();
