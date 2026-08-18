@@ -1,7 +1,7 @@
 package com.amir35.spring_ai.controller;
 
-import com.amir35.spring_ai.dto.ChatRequest;
-import com.amir35.spring_ai.dto.ChatResponse;
+import com.amir35.spring_ai.dto.request.ChatRequest;
+import com.amir35.spring_ai.dto.response.ChatResponse;
 import com.amir35.spring_ai.service.ChatService;
 import org.springframework.web.bind.annotation.*;
 

@@ -1,7 +1,7 @@
 package com.amir35.spring_ai.controller;
 
 import com.amir35.spring_ai.service.EmbeddingService;
-import com.amir35.spring_ai.service.VectorStoreService;
+import com.amir35.spring_ai.vectorstore.VectorStoreService;
 import org.springframework.web.bind.annotation.*;
 
 import org.springframework.ai.document.Document;

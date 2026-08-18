@@ -1,4 +1,4 @@
-package com.amir35.spring_ai;
+package com.amir35.spring_ai.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;

@@ -1,4 +1,4 @@
-package com.amir35.spring_ai.service;
+package com.amir35.spring_ai.vectorstore;
 
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.VectorStore;
