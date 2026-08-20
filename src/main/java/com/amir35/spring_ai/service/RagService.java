@@ -74,12 +74,9 @@ public class RagService {
                 .call()
                 .chatClientResponse();
 
-        long chatClientTime =
-                System.currentTimeMillis() - chatClientStart;
+        long chatClientTime =  System.currentTimeMillis() - chatClientStart;
 
-        long responseTime =
-                System.currentTimeMillis() - startTime;
-
+        long responseTime =  System.currentTimeMillis() - startTime;
 
         // -----------------------------------------
         // Answer
@@ -109,9 +106,8 @@ public class RagService {
         // -----------------------------------------
         // Performance
         // -----------------------------------------
-        RagPerformanceResponse performance =
-                RagPerformanceResponse.builder()
-                       .retrievedChunks(documents.size())
+        RagPerformanceResponse performance = RagPerformanceResponse.builder()
+                        .retrievedChunks(documents.size())
                         .contextTokens(contextTokens)
                         .responseTimeMs(responseTime)
                         .chatClientTimeMs(chatClientTime)
@@ -134,14 +130,11 @@ public class RagService {
     // STREAMING API
     // =========================================================
 
-    public Flux<ServerSentEvent<?>> askQuestionStream(
-            String question,
-            String conversationId) {
+    public Flux<ServerSentEvent<?>> askQuestionStream(String question, String conversationId) {
 
         long startTime = System.currentTimeMillis();
 
-        StringBuilder fullAnswer =
-                new StringBuilder();
+        StringBuilder fullAnswer =  new StringBuilder();
 
         return chatClient
                 .prompt()
