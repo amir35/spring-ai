@@ -26,21 +26,17 @@ public class RagService {
 
     private final ChatClient chatClient;
 
-    public RagService(
-            ChatClient.Builder chatClientBuilder,
-            VectorStore vectorStore,
+    public RagService(ChatClient.Builder chatClientBuilder,VectorStore vectorStore,
             ChatMemory chatMemory) {
 
         this.chatClient = chatClientBuilder
                 .defaultAdvisors(
-
                         // -----------------------------------------
                         // Chat Memory
                         // -----------------------------------------
                         MessageChatMemoryAdvisor
                                 .builder(chatMemory)
                                 .build(),
-
                         // -----------------------------------------
                         // RAG
                         // -----------------------------------------
@@ -57,14 +53,10 @@ public class RagService {
                 .build();
     }
 
-
     // =========================================================
     // NORMAL / NON-STREAMING API
     // =========================================================
-
-    public RagResponse askQuestion(
-            String question,
-            String conversationId) {
+    public RagResponse askQuestion(String question, String conversationId) {
 
         long startTime = System.currentTimeMillis();
 
@@ -92,59 +84,42 @@ public class RagService {
         // -----------------------------------------
         // Answer
         // -----------------------------------------
-
         String answer = extractAnswer(response);
-
 
         // -----------------------------------------
         // Retrieved documents
         // -----------------------------------------
-
-        List<Document> documents =
-                extractDocuments(response);
-
+        List<Document> documents = extractDocuments(response);
 
         // -----------------------------------------
         // Sources
         // -----------------------------------------
-
-        List<SourceResponse> sources =
-                extractSources(documents);
-
+        List<SourceResponse> sources = extractSources(documents);
 
         // -----------------------------------------
         // Token usage
         // -----------------------------------------
-
-        TokenUsageResponse tokenUsage =
-                extractTokenUsage(response);
-
+        TokenUsageResponse tokenUsage = extractTokenUsage(response);
 
         // -----------------------------------------
         // Context tokens
         // -----------------------------------------
-
-        Integer contextTokens =
-                estimateContextTokens(documents);
-
+        Integer contextTokens = estimateContextTokens(documents);
 
         // -----------------------------------------
         // Performance
         // -----------------------------------------
-
         RagPerformanceResponse performance =
                 RagPerformanceResponse.builder()
-                        .retrievedChunks(documents.size())
+                       .retrievedChunks(documents.size())
                         .contextTokens(contextTokens)
                         .responseTimeMs(responseTime)
                         .chatClientTimeMs(chatClientTime)
                         .build();
 
-
         // -----------------------------------------
         // Final response
         // -----------------------------------------
-
         return RagResponse.builder()
                 .question(question)
                 .answer(answer)
@@ -294,21 +269,16 @@ public class RagService {
     // EXTRACT ANSWER
     // =========================================================
 
-    private String extractAnswer(
-            ChatClientResponse response) {
+    private String extractAnswer(ChatClientResponse response) {
 
-        if (response == null
-                || response.chatResponse() == null
+        if (response == null || response.chatResponse() == null
                 || response.chatResponse().getResult() == null
-                || response.chatResponse()
-                .getResult()
-                .getOutput() == null) {
+                || response.chatResponse().getResult().getOutput() == null) {
 
             return "";
         }
 
-        String text =
-                response.chatResponse()
+        String text = response.chatResponse()
                         .getResult()
                         .getOutput()
                         .getText();
@@ -321,21 +291,15 @@ public class RagService {
     // EXTRACT DOCUMENTS
     // =========================================================
 
-    private List<Document> extractDocuments(
-            ChatClientResponse response) {
+    private List<Document> extractDocuments(ChatClientResponse response) {
 
-        if (response == null
-                || response.context() == null) {
+        if (response == null || response.context() == null) {
 
             return List.of();
         }
 
-        Object retrievedDocuments =
-                response.context()
-                        .get(
-                                QuestionAnswerAdvisor
-                                        .RETRIEVED_DOCUMENTS
-                        );
+        Object retrievedDocuments = response.context()
+                        .get( QuestionAnswerAdvisor.RETRIEVED_DOCUMENTS);
 
         if (retrievedDocuments instanceof List<?> list) {
 
@@ -352,13 +316,9 @@ public class RagService {
     // =========================================================
     // SOURCES
     // =========================================================
+    private List<SourceResponse> extractSources( List<Document> documents) {
 
-    private List<SourceResponse> extractSources(
-            List<Document> documents) {
-
-        if (documents == null
-                || documents.isEmpty()) {
-
+        if (documents == null || documents.isEmpty()) {
             return List.of();
         }
 
@@ -369,17 +329,13 @@ public class RagService {
     }
 
 
-    private SourceResponse toSourceResponse(
-            Document document) {
+    private SourceResponse toSourceResponse(Document document) {
 
-        Map<String, Object> metadata =
-                document.getMetadata();
+        Map<String, Object> metadata = document.getMetadata();
 
-        String fileName =
-                (String) metadata.get("file_name");
+        String fileName = (String) metadata.get("file_name");
 
-        Integer pageNumber =
-                getPageNumber(metadata);
+        Integer pageNumber = getPageNumber(metadata);
 
         return SourceResponse.builder()
                 .fileName(fileName)
@@ -388,17 +344,13 @@ public class RagService {
     }
 
 
-    private Integer getPageNumber(
-            Map<String, Object> metadata) {
+    private Integer getPageNumber(Map<String, Object> metadata) {
 
-        Object pageNumber =
-                metadata.get("page_number");
+        Object pageNumber = metadata.get("page_number");
 
         if (pageNumber instanceof Number number) {
-
             return number.intValue();
         }
-
         return null;
     }
 
@@ -406,24 +358,18 @@ public class RagService {
     // =========================================================
     // TOKEN USAGE
     // =========================================================
+    private TokenUsageResponse extractTokenUsage(ChatClientResponse response) {
 
-    private TokenUsageResponse extractTokenUsage(
-            ChatClientResponse response) {
+        if (response == null  || response.chatResponse() == null) {
 
-        if (response == null
-                || response.chatResponse() == null) {
-
-            return TokenUsageResponse.builder()
-                    .build();
+            return TokenUsageResponse.builder().build();
         }
 
-        Usage usage =
-                response.chatResponse()
+        Usage usage = response.chatResponse()
                         .getMetadata()
                         .getUsage();
 
         if (usage == null) {
-
             return TokenUsageResponse.builder()
                     .build();
         }
@@ -445,18 +391,13 @@ public class RagService {
     // =========================================================
     // CONTEXT TOKEN ESTIMATION
     // =========================================================
+    private Integer estimateContextTokens(List<Document> documents) {
 
-    private Integer estimateContextTokens(
-            List<Document> documents) {
-
-        if (documents == null
-                || documents.isEmpty()) {
-
+        if (documents == null || documents.isEmpty()) {
             return 0;
         }
 
-        int characterCount =
-                documents.stream()
+        int characterCount = documents.stream()
                         .map(Document::getText)
                         .filter(text -> text != null)
                         .mapToInt(String::length)
