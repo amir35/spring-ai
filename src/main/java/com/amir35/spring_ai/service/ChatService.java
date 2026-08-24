@@ -1,6 +1,7 @@
 package com.amir35.spring_ai.service;
 
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -12,7 +13,7 @@ public class ChatService {
         this.chatClient = chatClientBuilder.build();
     }
 
-    public String ask(String message) {
+    public ChatResponse ask(String message) {
         return chatClient
                 .prompt()
                 .system("""
@@ -26,6 +27,6 @@ public class ChatService {
                     """)
                 .user(message)
                 .call()
-                .content();
+                .chatResponse();
     }
 }

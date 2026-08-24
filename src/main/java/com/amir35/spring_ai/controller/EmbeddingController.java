@@ -12,15 +12,13 @@ public class EmbeddingController {
 
     private final EmbeddingService embeddingService;
 
-    public EmbeddingController(
-            EmbeddingService embeddingService) {
+    public EmbeddingController(EmbeddingService embeddingService) {
 
         this.embeddingService = embeddingService;
     }
 
     @PostMapping("/embedding")
-    public Map<String, Object> generateEmbedding(
-            @RequestBody String text) {
+    public Map<String, Object> generateEmbedding(@RequestBody String text) {
 
         float[] embedding = embeddingService.generateEmbedding(text);
 

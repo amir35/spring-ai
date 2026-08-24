@@ -22,8 +22,7 @@ public class PdfController {
     public ResponseEntity<Map<String, Object>> ingestPdf(
             @RequestParam("file") MultipartFile file) throws IOException {
 
-        int chunks =
-                pdfIngestionService.ingestPdf(
+        int chunks = pdfIngestionService.ingestPdf(
                         file.getResource()
                 );
 

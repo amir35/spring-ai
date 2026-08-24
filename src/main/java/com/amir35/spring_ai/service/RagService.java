@@ -225,8 +225,7 @@ public class RagService {
                                     .build();
 
 
-                    RagResponse metadata =
-                            RagResponse.builder()
+                    RagResponse metadata = RagResponse.builder()
                                     .question(question)
                                     .answer(
                                             fullAnswer.toString()
@@ -241,8 +240,7 @@ public class RagService {
                     // Send metadata after all chunks
                     // -----------------------------------------
 
-                    Flux<ServerSentEvent<?>> metadataEvent =
-                            Flux.just(
+                    Flux<ServerSentEvent<?>> metadataEvent = Flux.just(
                                     ServerSentEvent
                                             .builder()
                                             .event("metadata")
@@ -251,9 +249,7 @@ public class RagService {
                             );
 
 
-                    return chunks.concatWith(
-                            metadataEvent
-                    );
+                    return chunks.concatWith(metadataEvent);
                 });
     }
 

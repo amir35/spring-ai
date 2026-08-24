@@ -19,18 +19,14 @@ public class RagController {
         this.ragService = ragService;
     }
 
-    // =========================================================
-    // NORMAL / NON-STREAMING API
-    // =========================================================
+    // NON-STREAMING API
     @PostMapping("/ask")
     public RagResponse ask(@RequestBody AskRequest request) {
 
         return ragService.askQuestion(request.getQuestion(),request.getConversationId());
     }
 
-    // =========================================================
     // STREAMING API
-    // =========================================================
     @PostMapping(value = "/ask/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<ServerSentEvent<?>> askQuestionStream(@RequestParam String question, @RequestParam String conversationId) {
 
