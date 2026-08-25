@@ -1,6 +1,7 @@
 package com.amir35.spring_ai.service;
 
 import com.amir35.spring_ai.dto.response.RagPerformanceResponse;
+import java.util.concurrent.atomic.AtomicReference;
 import com.amir35.spring_ai.dto.response.RagResponse;
 import com.amir35.spring_ai.dto.response.SourceResponse;
 import com.amir35.spring_ai.dto.response.TokenUsageResponse;
@@ -129,141 +130,102 @@ public class RagService {
     // =========================================================
     // STREAMING API
     // =========================================================
-
-    public Flux<ServerSentEvent<?>> askQuestionStream(String question, String conversationId) {
+    public Flux<ServerSentEvent<?>> askQuestionStream(
+            String question,
+            String conversationId) {
 
         long startTime = System.currentTimeMillis();
 
-        StringBuilder fullAnswer =  new StringBuilder();
+        StringBuilder fullAnswer = new StringBuilder();
 
-        return chatClient
-                .prompt()
-                .user(question)
-                .advisors(advisor ->
-                        advisor.param(
-                                ChatMemory.CONVERSATION_ID,
-                                conversationId
+        AtomicReference<ChatClientResponse> lastResponse =
+                new AtomicReference<>();
+
+
+        Flux<ChatClientResponse> responseFlux = chatClient
+                        .prompt()
+                        .user(question)
+                        .advisors(advisor ->
+                                advisor.param(
+                                        ChatMemory.CONVERSATION_ID,
+                                        conversationId
+                                )
                         )
-                )
-                .stream()
-                .chatClientResponse()
-
-                .collectList()
-
-                .flatMapMany(responses -> {
-
-                    long responseTime =
-                            System.currentTimeMillis()
-                                    - startTime;
-
-                    /*
-                     * Last ChatClientResponse contains
-                     * the final metadata/context.
-                     */
-                    ChatClientResponse finalResponse =
-                            responses.isEmpty()
-                                    ? null
-                                    : responses.get(
-                                    responses.size() - 1
-                            );
+                        .stream()
+                        .chatClientResponse();
 
 
-                    // -----------------------------------------
-                    // Build answer chunks
-                    // -----------------------------------------
+        /*
+         * Stream each response immediately.
+         */
+        Flux<ServerSentEvent<?>> chunks = responseFlux
+                        .doOnNext(lastResponse::set)
+                        .map(this::extractAnswer)
+                        .filter(text ->
+                                text != null && !text.isEmpty()
+                        )
+                        .doOnNext(fullAnswer::append)
+                        .map(text -> ServerSentEvent
+                                        .builder()
+                                        .event("chunk")
+                                        .data(text)
+                                        .build()
+                        );
+        /*
+         * Send metadata only after streaming finishes.
+         */
+        Flux<ServerSentEvent<?>> metadata = Flux.defer(() -> {
 
-                    Flux<ServerSentEvent<?>> chunks =
-                            Flux.fromIterable(responses)
-                                    .map(this::extractAnswer)
-                                    .filter(text ->
-                                            text != null
-                                                    && !text.isEmpty()
-                                    )
-                                    .doOnNext(
-                                            fullAnswer::append
-                                    )
-                                    .map(text ->
-                                            ServerSentEvent
-                                                    .builder()
-                                                    .event("chunk")
-                                                    .data(text)
-                                                    .build()
-                                    );
+                    long responseTime = System.currentTimeMillis() - startTime;
 
+                    ChatClientResponse finalResponse = lastResponse.get();
 
-                    // -----------------------------------------
-                    // Extract final metadata
-                    // -----------------------------------------
+                    List<Document> documents = extractDocuments(finalResponse);
 
-                    List<Document> documents =
-                            extractDocuments(finalResponse);
+                    List<SourceResponse> sources = extractSources(documents);
 
-                    List<SourceResponse> sources =
-                            extractSources(documents);
+                    TokenUsageResponse tokenUsage = extractTokenUsage(finalResponse);
 
-                    TokenUsageResponse tokenUsage =
-                            extractTokenUsage(finalResponse);
+                    Integer contextTokens = estimateContextTokens(documents);
 
-                    Integer contextTokens =
-                            estimateContextTokens(documents);
-
-
-                    RagPerformanceResponse performance =
-                            RagPerformanceResponse.builder()
-                                    .retrievedChunks(
-                                            documents.size()
-                                    )
-                                    .contextTokens(
-                                            contextTokens
-                                    )
-                                    .responseTimeMs(
-                                            responseTime
-                                    )
-                                    .chatClientTimeMs(
-                                            responseTime
-                                    )
+                    RagPerformanceResponse performance = RagPerformanceResponse.builder()
+                                    .retrievedChunks(documents.size())
+                                    .contextTokens(contextTokens)
+                                    .responseTimeMs(responseTime)
+                                    .chatClientTimeMs(responseTime)
                                     .build();
 
 
-                    RagResponse metadata = RagResponse.builder()
+                    RagResponse ragResponse = RagResponse.builder()
                                     .question(question)
-                                    .answer(
-                                            fullAnswer.toString()
-                                    )
+                                    .answer(fullAnswer.toString())
                                     .sources(sources)
                                     .tokenUsage(tokenUsage)
                                     .performance(performance)
                                     .build();
 
 
-                    // -----------------------------------------
-                    // Send metadata after all chunks
-                    // -----------------------------------------
-
-                    Flux<ServerSentEvent<?>> metadataEvent = Flux.just(
-                                    ServerSentEvent
-                                            .builder()
-                                            .event("metadata")
-                                            .data(metadata)
-                                            .build()
-                            );
-
-
-                    return chunks.concatWith(metadataEvent);
+                    return Flux.just(ServerSentEvent
+                                    .builder()
+                                    .event("metadata")
+                                    .data(ragResponse)
+                                    .build()
+                    );
                 });
+
+
+        return chunks.concatWith(metadata);
     }
 
 
     // =========================================================
     // EXTRACT ANSWER
     // =========================================================
-
     private String extractAnswer(ChatClientResponse response) {
 
         if (response == null || response.chatResponse() == null
                 || response.chatResponse().getResult() == null
                 || response.chatResponse().getResult().getOutput() == null) {
-
             return "";
         }
 
@@ -271,7 +233,6 @@ public class RagService {
                         .getResult()
                         .getOutput()
                         .getText();
-
         return text != null ? text : "";
     }
 
@@ -283,7 +244,6 @@ public class RagService {
     private List<Document> extractDocuments(ChatClientResponse response) {
 
         if (response == null || response.context() == null) {
-
             return List.of();
         }
 
@@ -297,7 +257,6 @@ public class RagService {
                     .map(Document.class::cast)
                     .toList();
         }
-
         return List.of();
     }
 
@@ -350,7 +309,6 @@ public class RagService {
     private TokenUsageResponse extractTokenUsage(ChatClientResponse response) {
 
         if (response == null  || response.chatResponse() == null) {
-
             return TokenUsageResponse.builder().build();
         }
 
@@ -364,15 +322,9 @@ public class RagService {
         }
 
         return TokenUsageResponse.builder()
-                .promptTokens(
-                        usage.getPromptTokens()
-                )
-                .completionTokens(
-                        usage.getCompletionTokens()
-                )
-                .totalTokens(
-                        usage.getTotalTokens()
-                )
+                .promptTokens(usage.getPromptTokens())
+                .completionTokens(usage.getCompletionTokens())
+                .totalTokens(usage.getTotalTokens())
                 .build();
     }
 

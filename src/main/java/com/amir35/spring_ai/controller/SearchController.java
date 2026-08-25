@@ -21,9 +21,7 @@ public class SearchController {
     }
 
     @PostMapping("/search")
-    public List<Document> search(
-            @RequestBody String query) {
-
+    public List<Document> search(@RequestBody String query) {
         return vectorStoreService.search(query);
     }
 }
