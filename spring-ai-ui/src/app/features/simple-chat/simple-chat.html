@@ -1,0 +1,34 @@
+<div class="chat-content">
+    <div class="chat-title">
+        <h2> Simple Chat </h2>
+        <p> Ask the AI anything </p>
+
+        <label class="stream-toggle">
+
+            <input type="checkbox" [(ngModel)]="isStreamingMode">
+
+            <span> Stream response </span>
+
+        </label>
+    </div>
+
+    <!-- =============QUESTION==============-->
+    <textarea [(ngModel)]="question" placeholder="Ask something..." rows="6">
+    </textarea>
+
+    <div class="action-container">
+        <button type="button" (click)="getAnswer()" [disabled]="loading() || !question.trim()">
+            {{
+            loading() ? 'Thinking...' : 'Ask Question'
+            }}
+        </button>
+    </div>
+
+    <!-- =============ANSWER==============-->
+    @if (answer()) {
+    <section class="answer-card">
+        <h3> Answer </h3>
+        <div class="answer"> {{ answer() }} </div>
+    </section>
+    }
+</div>

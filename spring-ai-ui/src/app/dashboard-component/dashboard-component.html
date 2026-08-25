@@ -1,0 +1,61 @@
+<div class="app-layout">
+
+    <!-- =========================================
+         SIDEBAR
+         ========================================= -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2>Spring AI</h2>
+            <span> AI Playground </span>
+        </div>
+
+        <nav class="menu">
+            <button
+                [class.active]="activeMenu === 'simple'"
+                (click)="activeMenu = 'simple'">
+
+                <span class="icon">💬</span>
+
+                <span> Simple Chat </span>
+            </button>
+
+            <button
+                [class.active]="activeMenu === 'document'"
+                (click)="activeMenu = 'document'">
+
+                <span class="icon">📄</span>
+
+                <span> Document Upload Chat </span>
+            </button>
+
+
+            <button
+                [class.active]="activeMenu === 'stream'"
+                (click)="activeMenu = 'stream'">
+
+                <span class="icon">⚡</span>
+
+                <span> Stream Chat </span>
+            </button>
+        </nav>
+    </aside>
+
+
+    <!-- =========================================
+         MAIN CONTENT
+         ========================================= -->
+    <main class="content">
+        @if (activeMenu === 'simple') {
+            <app-simple-chat />
+        }
+
+        @if (activeMenu === 'document') {
+            <app-rag-chat />
+        }
+
+
+        @if (activeMenu === 'stream') {
+            <app-rag-stream />
+        }
+    </main>
+</div>

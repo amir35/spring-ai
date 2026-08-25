@@ -1,0 +1,104 @@
+<div class="chat-content">
+
+    <!-- =============HEADER===============-->
+    <div class="chat-title">
+        <h2> Spring AI RAG </h2>
+        <p> Ask questions about your documents </p>
+    </div>
+
+    <!-- =============QUESTION===============-->
+    <textarea [(ngModel)]="question" placeholder="Ask something about your uploaded documents..." rows="6"></textarea>
+
+    <div class="action-container">
+        <button type="button" (click)="askQuestion()" [disabled]="loading() || !question.trim()">
+            {{
+                loading() ? 'Thinking...' : 'Ask Question'
+            }}
+        </button>
+    </div>
+
+    <!-- =============RESPONSE===============-->
+    @if (ragResponse(); as result) {
+    <!-- =============ANSWER===============-->
+    <section class="answer-card">
+        <h3> Answer </h3>
+        <div class="answer"> {{ result.answer }} </div>
+    </section>
+
+    <!-- =============SOURCES===============-->
+    @if (result.sources.length > 0) {
+
+    <section class="sources-card">
+        <h2> Sources </h2>
+
+        @for (source of result.sources; track $index ) {
+
+        <div class="source">
+            <span class="file-icon"> 📄 </span>
+            <div>
+                <strong> {{ source.fileName }} </strong>
+
+                @if (source.pageNumber) {
+                <span> Page {{ source.pageNumber }} </span>
+                }
+
+            </div>
+        </div>
+        }
+    </section>
+    }
+
+    <!-- =============PERFORMANCE===============-->
+    @if (result.performance) {
+    <section class="performance-card">
+        <h2> RAG Performance </h2>
+
+        <div class="stats-grid">
+            <div class="stat">
+                <span class="label"> Retrieved Chunks </span>
+                <strong> {{ result.performance.retrievedChunks }} </strong>
+            </div>
+
+            <div class="stat">
+                <span class="label"> Context Tokens </span>
+                <strong> ~{{ result.performance.contextTokens }} </strong>
+            </div>
+
+            <div class="stat">
+                <span class="label"> Response Time </span>
+                <strong> {{ result.performance.responseTimeMs }} ms </strong>
+            </div>
+
+
+            <div class="stat">
+                <span class="label"> ChatClient Time </span>
+                <strong> {{ result.performance.chatClientTimeMs }} ms </strong>
+            </div>
+        </div>
+    </section>
+    }
+
+    <!-- =============TOKEN USAGE===============-->
+    @if (result.tokenUsage) {
+    <section class="token-card">
+        <h2> Token Usage </h2>
+        <div class="stats-grid">
+            <div class="stat">
+                <span class="label"> Prompt Tokens </span>
+                <strong> {{ result.tokenUsage.promptTokens }} </strong>
+            </div>
+
+            <div class="stat">
+                <span class="label"> Output Tokens </span>
+                <strong> {{ result.tokenUsage.completionTokens }} </strong>
+            </div>
+
+            <div class="stat">
+                <span class="label"> Total Tokens </span>
+                <strong> {{ result.tokenUsage.totalTokens }} </strong>
+            </div>
+        </div>
+    </section>
+    }
+    }
+</div>

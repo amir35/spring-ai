@@ -1,0 +1,115 @@
+.app-layout {
+    display: flex;
+    min-height: 100vh;
+    background: #f5f6f8;
+}
+
+
+/* =========================================
+   SIDEBAR
+   ========================================= */
+.sidebar {
+    width: 260px;
+    min-width: 260px;
+
+    background: #111827;
+    color: white;
+
+    padding: 24px 16px;
+
+    box-sizing: border-box;
+}
+
+
+.sidebar-header {
+    padding: 0 12px 28px;
+    border-bottom: 1px solid #374151;
+}
+
+
+.sidebar-header h2 {
+    margin: 0;
+    font-size: 22px;
+}
+
+
+.sidebar-header span {
+    display: block;
+    margin-top: 5px;
+    color: #9ca3af;
+    font-size: 13px;
+}
+
+
+/* =========================================
+   MENU
+   ========================================= */
+.menu {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 24px;
+}
+
+
+.menu button {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: #d1d5db;
+    font-size: 14px;
+    text-align: left;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+
+.menu button:hover {
+    background: #1f2937;
+}
+
+
+.menu button.active {
+    background: #374151;
+    color: white;
+    font-weight: 600;
+}
+
+
+.icon {
+    width: 24px;
+    text-align: center;
+    font-size: 17px;
+}
+
+
+/* =========================================
+   CONTENT
+   ========================================= */
+
+.content {
+    flex: 1;
+    min-width: 0;
+    padding: 32px;
+    box-sizing: border-box;
+}
+
+
+/* =========================================
+   MOBILE
+   ========================================= */
+
+@media (max-width: 700px) {
+    .sidebar {
+        width: 210px;
+        min-width: 210px;
+    }
+    .content {
+        padding: 20px;
+    }
+}
